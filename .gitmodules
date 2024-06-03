@@ -1,6 +1,3 @@
-[submodule "lib/MonoLSS"]
-	path = lib/MonoLSS
-	url = git@github.com:r0bertr/MonoLSS.git
 [submodule "lib/dd3d"]
 	path = lib/dd3d
 	url = git@github.com:r0bertr/dd3d.git

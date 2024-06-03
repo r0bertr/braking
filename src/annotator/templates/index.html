@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <script type="importmap">
+    {
+      "imports": {
+        "@material/web/": "https://esm.run/@material/web/"
+      }
+    }
+  </script>
+  <script type="module">
+    import '@material/web/all.js';
+    import {styles as typescaleStyles} from '@material/web/typography/md-typescale-styles.js';
+
+    document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
+  </script>
+  <script>
+
+    $(function() {
+      function showProgress() {
+        $("#progress").show();
+      }
+
+      function hideProgress() {
+        $("#progress").hide();
+      }
+
+      function disableButtons() {
+        $(".btn-toggle").prop("disabled", true);
+      }
+
+      function enableButtons() {
+        $(".btn-toggle").prop("disabled", false);
+      }
+
+      function showDialog(e) {
+        $("#new-session-dialog")[0].show();
+      }
+
+      function showSessionMenu(e) {
+        $("#session-menu")[0].open = !$("#session-menu")[0].open;
+      }
+
+      function alertError(jqXHR, textStatus, errorThrown) {
+        alert("Request failed: " + jqXHR.responseText + " " + errorThrown);
+      }
+
+      sessions = [];
+      session = null;
+      seqStr = null;
+      sequence = null;
+      clips = [];
+      clipInds = [];
+      whichClip = 0;
+      clipLabels = [];
+      clipChecks = [];
+      clip_url = null;
+
+      function setSequenceName(idx) {
+        $("#clip-container").empty();
+        $("#sequence-panel").hide();
+        $("#clip").hide();
+        selectedSeqStr = session.status.unfinished.concat(session.status.finished).sort()[idx]
+        $("#sequence-slider").siblings("label").text(
+          session.status.unfinished.concat(session.status.finished).sort()[idx]
+        );
+        if (session.status.finished.indexOf(selectedSeqStr) == -1) {
+          $("#label-indicator").text("Unlabeled");
+          $("#label-indicator").removeClass("btn-green");
+          $("#label-indicator").addClass("btn-red");
+        } else {
+          $("#label-indicator").text("Labeled");
+          $("#label-indicator").removeClass("btn-red");
+          $("#label-indicator").addClass("btn-green");
+        }
+      }
+
+      function setupSessions(data, textStatus, jqXHR) {
+        sessions = data;
+        if (data.length > 0) {
+          $("#load-session-menu").show();
+          $("#session-menu").empty();
+          for (var i = 0; i < data.length; i++) {
+            html = "<md-menu-item><div slot='headline' index='" + i + "'>" + data[i].name + "</md-menu-item>"
+            $("#session-menu").append(html);
+          }
+        }
+        return jqXHR
+      }
+
+      function loadSessions() {
+        showProgress();
+        return $.ajax({
+          type: "GET",
+          url: "/sessions",
+        });
+      }
+
+      function createSession(e) {
+        return $.ajax({
+          type: "POST",
+          url: "/session",
+          data: {
+            name: e.target.name.value,
+            threshold: e.target.threshold.value,
+            use_accel_x: e.target.use_accel_x.checked,
+          },
+        })
+      }
+
+      function setupSession() {
+        return function(data, textStatus, xhr) {
+          session = data;
+          seqStrs = session.status.unfinished.concat(session.status.finished).sort();
+          $("#sequence-slider").prop("max", seqStrs.length - 1);
+          $("#sequence-slider").val(0);
+          $("#main-panel").show();
+          setSequenceName(0);
+          return xhr;
+        };
+      }
+
+      function loadSession(idx) {
+        return function(data, status, xhr) { 
+          showProgress();
+          sessionName = sessions[idx].name;
+          return $.ajax({
+            type: "GET",
+            url: "/session/" + sessionName,
+          });
+        };
+      }
+
+      function setupSequence(data, textStatus, jqXHR) {
+        sequence = data;
+        clips = [];
+        clipInds = [];
+        whichClip = 0;
+        $("#clip-container").empty();
+        $("#sequence-panel h3").text("Sequence: " + seqStr);
+        $("#sequence-panel").show();
+        $("#clip").show();
+        clipLabels = sequence["labels"];
+        if (session.status.finished.indexOf(seqStr) != -1) {
+          clipChecks = new Array(sequence["labels"].length).fill(1);
+        } else {
+          clipChecks = new Array(sequence["labels"].length).fill(0);
+        }
+        setClipInfo(0);
+        return jqXHR;
+      }
+
+      function setClipInfo(clipIdx) {
+        dtStr = sequence["datetimes"][clipIdx];
+        $("#sequence-panel h2").text("Clip (" + (clipIdx + 1).toString() + "/" + sequence["datetimes"].length.toString() + "): " + dtStr);
+        $("#sequence-panel p").text(
+          "Accel: (" +
+          sequence["accel_x"][clipIdx].toFixed(4).toString() + ", " +
+          sequence["accel_y"][clipIdx].toFixed(4).toString() + ", " +
+          sequence["accel_z"][clipIdx].toFixed(4).toString() + "), " +
+          sequence["accel"][clipIdx].toFixed(4).toString()
+        );
+        if (clipChecks[clipIdx]) {
+          clipLabel = clipLabels[clipIdx];
+          brakingText = $("#braking-menu div")[clipLabel].textContent;
+          $("#braking-label").text(brakingText);
+          $("#braking-description").val(sequence["braking_description"][clipIdx]);
+        } else {
+          $("#braking-label").text("");
+          $("#braking-description").val("");
+        }
+      }
+
+      function playClip(data, textStatus, jqXHR) {
+        clip = clips[whichClip];
+        $("#clip-container").empty();
+        $("#braking-anchor").prop("disabled", false);
+        $("#clip-container").append(
+          "<video autoplay loop><source src='data:video/mp4;base64," + clip + "' type='video/mp4'></video>"
+        )
+        return jqXHR;
+      }
+
+      function addClip(clipIdx, reverse) {
+        return function(data, textStatus, jqXHR) {
+          if (clipIdx >= 0 && clipIdx < sequence["datetimes"].length) {
+            if (reverse) {
+              clips.unshift(data);
+              clipInds.unshift(clipIdx);
+            } else {
+              clips.push(data);
+              clipInds.push(clipIdx);
+            }
+          }
+          return jqXHR;
+        }
+      }
+
+      function popClip(reverse) {
+        return function(data, textStatus, jqXHR) {
+          if (clips.length > 3) {
+            if (reverse) {
+              clips.pop();
+              clipInds.pop();
+              whichClip++;
+            } else {
+              clips.shift();
+              clipInds.shift();
+              whichClip--;
+            }
+          }
+          return jqXHR;
+        }
+      }
+
+      function clearClip(data, textStatus, jqXHR) {
+        clips = [];
+        clipInds = [];
+        whichClip = 0;
+        return jqXHR;
+      }
+
+      function loadClip(clipIdx) {
+        return function(data, textStatus, jqXHR) {
+          clipDts = sequence["datetimes"];
+          if (clipIdx < 0 || clipIdx >= clipDts.length) {
+            return jqXHR;
+          }
+          dtStr = clipDts[clipIdx];
+          disableButtons();
+          return $.ajax({
+            type: "GET",
+            url: "/clip/" + session.config.name + "/" + seqStr + "/" + dtStr,
+          })
+        }
+      }
+
+      $("#session-anchor").on("click", showSessionMenu);
+      $("#btn-new-session").on("click", showDialog);
+      $("#btn-readme").on("click", function(e) {
+        $("#readme-dialog")[0].show();
+      });
+
+      $("#new-session-form").on("submit", function(e) {
+        p = Promise.resolve();
+        showProgress();
+        $.ajax({
+          type: "POST",
+          url: "/session",
+          data: {
+            name: e.target.name.value,
+            threshold: e.target.threshold.value,
+            use_accel_x: e.target.use_accel_x.checked,
+          },
+        })
+        .then(loadSessions, alertError)
+        .then(setupSessions, alertError)
+        .always(hideProgress);
+      });
+
+      $("#session-menu").on("click", function(e) {
+        if (e.target.tagName == "MD-MENU-ITEM") {
+          idx = $(e.target).children("div").attr("index");
+        } else {
+          idx = $(e.target).attr("index");
+        }
+        loadSession(idx)()
+        .then(setupSession(), alertError)
+        .always(hideProgress);
+      });
+
+      $("#sequence-slider").on("input", function(e) {
+        idx = e.target.value;
+        setSequenceName(idx);
+      });
+
+      $("#btn-prev-seq").on("click", function(e) {
+        idx = Math.max(0, parseInt($("#sequence-slider").val()) - 1);
+        $("#sequence-slider").val(idx);
+        setSequenceName(idx);
+      });
+
+      $("#btn-next-seq").on("click", function(e) {
+        idx = Math.min($("#sequence-slider").prop("max"), parseInt($("#sequence-slider").val()) + 1);
+        $("#sequence-slider").val(idx);
+        setSequenceName(idx);
+      });
+
+      $("#btn-next-unlabeled-seq").on("click", function(e) {
+        idx = parseInt($("#sequence-slider").val())
+        seqStrs = session.status.unfinished.concat(session.status.finished).sort();
+        for (var i = idx; i < $("#sequence-slider").prop("max"); i++) {
+          if (session.status.unfinished.indexOf(seqStrs[i]) != -1) {
+            $("#sequence-slider").val(i);
+            setSequenceName(i);
+            break;
+          }
+        }
+      });
+
+      $("#btn-load-seq").on("click", function(e) {
+        seqStr = $("#sequence-slider").siblings("label").text();
+        showProgress();
+        $("#braking-anchor").prop("disabled", true);
+        $.ajax({
+          type: "GET",
+          url: "/sequence/" + session.config.name + "/" + seqStr,
+        })
+        .then(setupSequence, alertError)
+        .then(loadClip(0), alertError)
+        .then(addClip(0, false), alertError)
+        .then(playClip, alertError)
+        .then(function(data, textStatus, jqXHR) {
+          if (sequence["datetimes"].length > 1) {
+            return loadClip(1)(data, textStatus, jqXHR);
+          } else {
+            return jqXHR;
+          }
+        }, alertError)
+        .then(function(data, textStatus, jqXHR) {
+          if (sequence["datetimes"].length > 1) {
+            return addClip(1, false)(data, textStatus, jqXHR);
+          } else {
+            return jqXHR;
+          }
+        }, alertError)
+        .always([hideProgress, () => {
+          enableButtons();
+          $("#btn-prev-clip").prop("disabled", true);
+          if (sequence["datetimes"].length == 1) {
+            $("#btn-next-clip").prop("disabled", true);
+          }
+        }]);
+      });
+
+      $("#btn-next-clip").on("click", function(e) {
+        clipIdx = clipInds[whichClip];
+        if (clipIdx == sequence["datetimes"].length - 2) {
+          $("#btn-next-clip").prop("disabled", true);
+        }
+        if (clipIdx == 0) {
+          $("#btn-prev-clip").prop("disabled", false);
+        }
+        whichClip++;
+        clipIdx++;
+        setClipInfo(clipIdx);
+        playClip();
+        if (clipIdx < sequence["datetimes"].length - 1 && clipInds.indexOf(clipIdx + 1) == -1) {
+          showProgress();
+          loadClip(clipIdx + 1)()
+          .then(addClip(clipIdx + 1, false), alertError)
+          .then(popClip(false), alertError)
+          .always([hideProgress, enableButtons]);
+        }
+      });
+
+      $("#btn-prev-clip").on("click", function(e) {
+        clipIdx = clipInds[whichClip];
+        if (clipIdx == 1) {
+          $("#btn-prev-clip").prop("disabled", true);
+        }
+        if (clipIdx == sequence["datetimes"].length - 1) {
+          $("#btn-next-clip").prop("disabled", false);
+        }
+        whichClip--;
+        clipIdx--;
+        setClipInfo(clipIdx);
+        playClip();
+        if (clipIdx > 0 && clipInds.indexOf(clipIdx - 1) == -1) {
+          showProgress();
+          loadClip(clipIdx - 1)()
+          .then(addClip(clipIdx - 1, true), alertError)
+          .then(popClip(true), alertError)
+          .always([hideProgress, enableButtons]);
+        }
+      });
+
+      function labelPostProcess(label) {
+        return function(data, textStatus, jqXHR) {
+          clipLabels[clipIdx] = label;
+          clipChecks[clipIdx] = 1;
+          brakingText = $("#braking-menu div")[label].textContent;
+          $("#braking-label").text(brakingText);
+          if (clipChecks.every(v => v == 1)) {
+            $("#label-indicator").text("Labeled");
+            $("#label-indicator").removeClass("btn-red");
+            $("#label-indicator").addClass("btn-green");
+            unfinishedIdx = session.status.unfinished.indexOf(seqStr);
+            if (unfinishedIdx != -1) {
+              session.status.finished.push(seqStr);
+              session.status.unfinished.splice(unfinishedIdx, 1);
+            }
+            return $.ajax({
+              type: "PUT",
+              url: "/sequence/" + session.config.name + "/" + seqStr,
+            });
+          } else {
+            return jqXHR;
+          }
+        }
+      }
+
+      $("#braking-anchor").on("click", function(e) {
+        $("#braking-menu")[0].open = !$("#braking-menu")[0].open;
+      });
+
+      $("#braking-menu").on("click", function(e) {
+        if (e.target.tagName == "MD-MENU-ITEM") {
+          idx = $(e.target).children("div").attr("index");
+        } else if (e.target.tagName == "MD-MENU") {
+          return;
+        } else {
+          idx = $(e.target).attr("index");
+        }
+        clipIdx = clipInds[whichClip];
+        dt = sequence["datetimes"][clipIdx];
+        $("#progress-braking").show();
+        $.ajax({
+          type: "PUT",
+          url: "/clip/" + session.config.name + "/" + seqStr + "/" + dt,
+          data: {
+            braking_flag: idx,
+            braking_description: $("#braking-description").val(),
+          },
+        })
+        .then(labelPostProcess(idx), alertError)
+        .always(() => {
+          $("#progress-braking").hide();
+        });
+      });
+
+      loadSessions()
+      .then(setupSessions, alertError)
+      .always(hideProgress);
+    });
+    </script>
+  <style>
+    .dialog-text-field {
+      width: 500px;
+    }
+    #menu {
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+    #load-session-menu {
+      display: none;
+    }
+    .vertical-align {
+      vertical-align: middle;
+    }
+    .vertical-align-flex {
+      display: flex;
+      align-items: center;
+    }
+    .full-width {
+      width: 100%;
+    }
+    .btn-green {
+      --md-filled-button-container-color: green;
+    }
+    .btn-red {
+      --md-filled-button-container-color: red;
+    }
+    .btn-blue {
+      --md-filled-button-container-color: blue;
+    }
+  </style>
+  <meta charset="UTF-8">
+  <title>Braking Annotator</title>
+</head>
+<body>
+  <h1 class="vertical-align-flex">
+    Braking Annotation<md-filled-button style="margin-left: 20px;" id="btn-readme">README!!!</md-filled-button><md-circular-progress id="progress" indeterminate style="margin-left: 20px;"></md-circular-progress>
+  </h1>
+  <md-dialog type="alert" id="readme-dialog">
+    <div slot="headline">Please follow the instructions below.</div>
+    <form id="readme-form" slot="content" method="dialog">
+      <ol>
+        <li>"Load a Session"ボタンをクリックして、accelx_0.25を選択してください。</li>
+        <li>"Next Unlabeled Sequence"ボタンをクリックして、次のラベルされていないシーケンスに進んでください。</li>
+        <li>"Load Sequence"ボタンをクリックして、映像が表示するまでお待ち下さい。</li>
+        <li>映像が出て、"Please select:"ボタンがクリックできるようになったら、クリックしてラベルを選択してください。</li>
+        <li>映像の左上にある数字は"現在のフレーム/総フレーム数"です。この101フレーム間で、ブレーキが発生したかどうかを判断して、相応のラベルを選択してください。</li>
+        <li>ブレーキがない場合は、"Not a braking"を選択してください。</li>
+        <li>ブレーキがある場合は、"Not a braking"以外に、そのブレーキが相応しい要因を選択してください。</li>
+        <li>複数のブレーキが発生する場合は、より第50フレームに近いブレーキを考慮してください。</li>
+        <li>要因が選択肢にどれにでも当たらない場合は、まずはブレーキ要因欄に要因を記述して、"Braking: その他"を選択してください。</li>
+        <li>"Please select:"ボタンの選択肢のどれかをクリックしたら、下の要因欄にある文字と一緒にサーバーにアップロードして保存しますので、もし要因欄に記述しなくて先にラベルをクリックした場合は、記述してもう一度"Braking: その他"をクリックしてください。</li>
+        <li>複数の要因が考えられる場合は、一つ目の"Braking: 前方（或いは周囲）の車両があるため"を優先してください。周りの車両は少しでも影響があればそれを選んでください。</li>
+        <li>周りに車両がなくて、複数の要因が考えられる場合は、選択肢の順番が先の要因を優先してください。</li>
+        <li>一つの映像がラベルしたら、もし次の映像があれば"Next Clip"ボタンがクリックできますので、それをクリックして次の映像に進んでください。</li>
+        <li>一つの映像が表示したら、次の映像を自動的にダウンロードしますので、そのダウンロードが終わるまで"Next Clip"ボタンとかはクリックできません。できるようになるまでお待ちください。</li>
+        <li>全ての映像がラベルしたら、"Prev Sequence"前の赤色の"Unlabeled"は緑色の"Labeled"に変更しますので、緑色の"Labeled"が出たらこのシーケンスは完了となります。</li>
+        <li>進捗状況はシーケンス単位で保存していますので、シーケンスの途中で保存できません。もしシーケンスが終わらないままウェブページをリロードしたり閉じたりしたらこのシーケンスは最初の映像からラベルし直す必要がありますのでご注意ください。</li>
+        <li>今のシーケンスが完了したら（必ず緑色の"Labeled"が表示してるのを確認してください）、"Next Unlabeled Sequence"ボタンと"Load Sequence"ボタンを順番にクリックして、次のシーケンスに進んでください。</li>
+        <li>一番下のスライダにマウスを重ねたら、このシーケンスの番号が表示します。スライダでシーケンスを飛べます。</li>
+      </ol>
+    </form>
+    <div slot="actions">
+      <md-text-button form="readme-form" value="ok">OK</md-text-button>
+    </div>
+  </md-dialog>
+  <div id="menu">
+    <span style="position: relative" id="load-session-menu">
+      <md-filled-button id="session-anchor">Load a Session</md-filled-button>
+      <md-menu id="session-menu" anchor="session-anchor">
+      </md-menu>
+    </span>
+    <md-filled-button style="margin-left: 10px; display: none;" id="btn-new-session">Create a New Session</md-filled-button>
+  </div>
+
+  <md-dialog id="new-session-dialog">
+    <span slot="headline">
+      <span>Create a new session</span>
+    </span>
+    <form id="new-session-form" slot="content" method="dialog">
+    <div>
+      <md-filled-text-field autofocus label="Name" class="dialog-text-field" name="name"></md-filled-text-field>
+    </div>
+    <div>
+      <md-filled-text-field label="Threshold" class="dialog-text-field" name="threshold"></md-filled-text-field>
+    </div>
+    <div>
+      <label class="vertical-align-flex">
+        <md-checkbox label="UseAccelX" name="use_accel_x" touch-target="wrapper"></md-checkbox>
+        Use Acceleration X
+      </label>
+    </div>
+    </form>
+    <div slot="actions">
+      <md-text-button form="new-session-form" value="reset" type="reset">Reset</md-text-button>
+      <div style="flex: 1"></div>
+      <md-text-button form="new-session-form" value="cancel">Cancel</md-text-button>
+      <md-text-button form="new-session-form" value="submit">Submit</md-text-button>
+    </div>
+  </md-dialog>
+
+  <div id="main">
+    <div id="sequence-panel" style="margin-top: 20px; margin-bottom: 20px; display: none;">
+      <h2></h2>
+      <h3></h3>
+      <p></p>
+      <div id="sequence-panel-control">
+        <md-filled-tonal-button id="btn-prev-clip" class="btn-toggle" style="margin-left: 20px;">Prev Clip</md-filled-tonal-button>
+        <md-filled-tonal-button id="btn-next-clip" class="btn-toggle" style="margin-left: 20px;">Next Clip</md-filled-tonal-button>
+      </div>
+    </div>
+    <div id="clip" style="display: none;">
+      <div id="clip-container"></div>
+      <div id="clip-frame-info"></div>
+      <md-filled-button style="margin-top: 1em;" class="btn-blue" id="braking-anchor">Please select:</md-filled-button>
+      <md-menu id="braking-menu" anchor="braking-anchor">
+        <md-menu-item>
+          <div slot="headline" index="0">Not a braking.</div>
+        </md-menu-item>
+        <md-menu-item>
+          <div slot="headline" index="1">Braking: 前方（或いは周囲）の車両があるため.</div>
+        </md-menu-item>
+        <md-menu-item>
+          <div slot="headline" index="2">Braking: 信号が赤になったため.</div>
+        </md-menu-item>
+        <md-menu-item>
+          <div slot="headline" index="3">Braking: 前方に歩行者がいるため.</div>
+        </md-menu-item>
+        <md-menu-item>
+          <div slot="headline" index="4">Braking: 前方に障害物があるため.</div>
+        </md-menu-item>
+        <md-menu-item>
+          <div slot="headline" index="5">Braking: 前方路面に異常があるため.</div>
+        </md-menu-item>
+        <md-menu-item>
+          <div slot="headline" index="6">Braking: カーブするため.</div>
+        </md-menu-item>
+        <md-menu-item>
+          <div slot="headline" index="7">Braking: 車線変更のため.</div>
+        </md-menu-item>
+        <md-menu-item>
+          <div slot="headline" index="8">Braking: 安全確認のため.</div>
+        </md-menu-item>
+        <md-menu-item>
+          <div slot="headline" index="9">Braking: 運転のミス.</div>
+        </md-menu-item>
+        <md-menu-item>
+          <div slot="headline" index="10">Braking: 駐車するため.</div>
+        </md-menu-item>
+        <md-menu-item>
+          <div slot="headline" index="11">Braking: その他.</div>
+        </md-menu-item>
+      </md-menu>
+      <p style="font-weight: bold;" id="braking-label"></p>
+      <md-circular-progress id="progress-braking" indeterminate style="margin-left: 20px; display: none;"></md-circular-progress>
+      <div style="margin-top: 20px">
+        <md-filled-text-field
+          id="braking-description"
+          type="textarea",
+          label="ブレーキ要因（その他を選択する前に必ず入力してください）"
+          rows="3"
+          style="width: 800px;"
+        ></md-filled-text-field>
+      </div>
+    </div>
+    <div id="main-panel" style="display: none; margin-top: 20px;">
+      <div id="main-panel-control" class="vertical-align-flex">
+        <md-filled-button id="label-indicator"></md-filled-button>
+        <md-outlined-button id="btn-prev-seq" style="margin-left: 20px;">Prev Sequence</md-outlined-button>
+        <md-outlined-button id="btn-next-seq" style="margin-left: 20px;">Next Sequence</md-outlined-button>
+        <md-outlined-button id="btn-next-unlabeled-seq" style="margin-left: 20px;">Next Unlabeled Sequence</md-outlined-button>
+        <md-elevated-button id="btn-load-seq" class="btn-toggle" style="margin-left: 20px;">Load Sequence</md-elevated-button>
+      </div>
+      <div class="vertical-align-flex">
+        <label for="sequence-slider">Sequence</label>
+        <md-slider id="sequence-slider" class="full-width" labeled ticks min="0" max="1000" value="0"></md-slider>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,193 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+        },
+        {
+            "name": "Server: Annotator",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "flask",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/src/annotator",
+            "args": [
+                "--app=app",
+                "--debug",
+                "run",
+                "--host=0.0.0.0",
+            ]
+        },
+        {
+            "name": "Estimate inter-vehicle distance",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/estimate_dist.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--path-to-db=/home/user/data/ITS/kyushu_driving_database/databases/cleaned/probe_data_annotated.db",
+            ]
+        },
+        {
+            "name": "Run: 3D object detection",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/infer_3d_bboxes.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--path-to-output-dir=/home/user/data/ITS/kyushu_driving_database/object_detection",
+                "--debug"
+            ]
+        },
+        {
+            "name": "Experiment: Accel",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/exp_accel.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--path-to-cfg=configs/accel.yaml",
+                "--path-to-output=experiments/accel",
+            ]
+        },
+        {
+            "name": "Experiment: Probe Data GBDT",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/exp_gbdt.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--path-to-cfg=configs/gbdt_probe.yaml",
+                "--path-to-output=/home/user/data/ITS/kyushu_driving_database/experiments/gbdt_probe",
+            ]
+        },
+        {
+            "name": "Experiment: Probe Data GBDT Predict",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/exp_gbdt.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--path-to-cfg=configs/gbdt_probe_pred.yaml",
+                "--path-to-output=/home/user/data/ITS/kyushu_driving_database/experiments/gbdt_probe_pred",
+            ]
+        },
+        {
+            "name": "Experiment: Probe Data GBDT Predict 2secs",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/exp_gbdt.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--path-to-cfg=configs/gbdt_probe_pred_2secs.yaml",
+                "--path-to-output=/home/user/data/ITS/kyushu_driving_database/experiments/gbdt_probe_pred_2secs",
+            ]
+        },
+        {
+            "name": "Experiment: Probe Data GBDT Predict 3secs",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/exp_gbdt.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--path-to-cfg=configs/gbdt_probe_pred_3secs.yaml",
+                "--path-to-output=/home/user/data/ITS/kyushu_driving_database/experiments/gbdt_probe_pred_3secs",
+            ]
+        },
+        {
+            "name": "Experiment: Probe Data GBDT Predict 4secs",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/exp_gbdt.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--path-to-cfg=configs/gbdt_probe_pred_4secs.yaml",
+                "--path-to-output=/home/user/data/ITS/kyushu_driving_database/experiments/gbdt_probe_pred_4secs",
+            ]
+        },
+        {
+            "name": "Experiment: Probe Data GBDT Predict 5secs",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/exp_gbdt.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--path-to-cfg=configs/gbdt_probe_pred_5secs.yaml",
+                "--path-to-output=/home/user/data/ITS/kyushu_driving_database/experiments/gbdt_probe_pred_5secs",
+            ]
+        },
+        {
+            "name": "Experiment: Dist GBDT",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/exp_gbdt.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--path-to-cfg=configs/gbdt_dist.yaml",
+                "--path-to-output=/home/user/data/ITS/kyushu_driving_database/experiments/gbdt_dist",
+            ]
+        },
+        {
+            "name": "Experiment: Dist GBDT Predict 1secs",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/exp_gbdt.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--path-to-cfg=configs/gbdt_dist_pred_1secs.yaml",
+                "--path-to-output=/home/user/data/ITS/kyushu_driving_database/experiments/gbdt_dist_pred_1secs",
+            ]
+        },
+        {
+            "name": "Experiment: Dist GBDT Predict 2secs",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/exp_gbdt.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--path-to-cfg=configs/gbdt_dist_pred_2secs.yaml",
+                "--path-to-output=/home/user/data/ITS/kyushu_driving_database/experiments/gbdt_dist_pred_2secs",
+            ]
+        },
+        {
+            "name": "Experiment: Dist GBDT Predict 3secs",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/exp_gbdt.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--path-to-cfg=configs/gbdt_dist_pred_3secs.yaml",
+                "--path-to-output=/home/user/data/ITS/kyushu_driving_database/experiments/gbdt_dist_pred_3secs",
+            ]
+        },
+        {
+            "name": "Experiment: Dist GBDT Predict 4secs",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/exp_gbdt.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--path-to-cfg=configs/gbdt_dist_pred_4secs.yaml",
+                "--path-to-output=/home/user/data/ITS/kyushu_driving_database/experiments/gbdt_dist_pred_4secs",
+            ]
+        },
+        {
+            "name": "Experiment: Dist GBDT Predict 5secs",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/exp_gbdt.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--path-to-cfg=configs/gbdt_dist_pred_5secs.yaml",
+                "--path-to-output=/home/user/data/ITS/kyushu_driving_database/experiments/gbdt_dist_pred_5secs",
+            ]
+        }
+    ]
+}

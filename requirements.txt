@@ -1,0 +1,17 @@
+numpy
+pandas
+tqdm
+opencv-python
+matplotlib
+pyyaml
+omegaconf
+scikit-learn
+dacite
+catboost
+flask
+hydra-core
+detectron2 @ git+https://github.com/facebookresearch/detectron2.git@79f914785a87b80565381f4489b129e633c4efb5
+wandb
+pyquaternion
+seaborn
+nuscenes-devkit

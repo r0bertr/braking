@@ -1,8 +1,0 @@
-{
-    "columns": [
-        ["datetime", "speed", "accel_x", "accel_y", "accel_z", "latitude", "longitude"]
-    ],
-    "depth": [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-    "lr": [0.001],
-    "verbose": [false]
-}

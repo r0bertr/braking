@@ -11,7 +11,6 @@ from src.tools import parse_args
 class Args:
     path_to_cfg: Path = MISSING
     path_to_output: Path = MISSING
-    path_to_grid_search: Path = None
 
 if __name__ == "__main__":
     args: Args = parse_args(Args)

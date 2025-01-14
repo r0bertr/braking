@@ -139,8 +139,8 @@ def plot_multi_xy(x_datas, y_datas, path_to_output: Path, title: str = "",
             for j, anno in enumerate(annotations[i]):
                 ax.annotate(anno, (x_data[j], y_data[j]))
     if len(labels) > 0:
-        # ax.legend(fontsize=fontsize)
-        ax.legend(bbox_to_anchor=(1.1, 1.0), loc="upper right", fontsize=fontsize)
+        ax.legend(fontsize=fontsize)
+        # ax.legend(bbox_to_anchor=(1.0, 1.0), loc="upper right", fontsize=fontsize)
     if grid:
         ax.grid()
     ax.tick_params(axis='both', labelsize=fontsize)

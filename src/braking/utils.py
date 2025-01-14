@@ -6,9 +6,8 @@ from typing import Tuple
 import cv2
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 
-from braking import DATETIME_FMT_SEQ_NAME
+from src.braking import DATETIME_FMT_SEQ_NAME
 
 
 def seq_name_to_dt(seq_name: str) -> datetime:

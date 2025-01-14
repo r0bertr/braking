@@ -11,7 +11,7 @@ from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from PIL import Image
 
-from braking.utils import draw_text
+from src.braking.utils import draw_text
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -48,7 +48,7 @@ def load_df_by_csv_and_seq(path_to_db: Path, csv_ids = [], seq_names = []) -> pd
     df["datetime"] = pd.to_datetime(df["datetime"])
     return df
 
-def load_seqs_with_braking(path_to_db: Path) -> pd.DataFrame:
+def load_seqs_with_braking(path_to_db: Path, seq_names: list = None) -> pd.DataFrame:
     sql = f"""SELECT t1.*
 FROM probe_data AS t1
 JOIN (SELECT DISTINCT csv_identifier, seq_name

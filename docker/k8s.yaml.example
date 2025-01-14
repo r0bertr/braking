@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: braking
+  labels:
+    app: braking
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: braking
+  template:
+    metadata:
+      labels:
+        app: braking
+    spec:
+      containers:
+      - name: braking
+        image: r0bert/braking
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: braking
+          mountPath: /home/user/braking
+        - name: datasets
+          mountPath: /home/user/data
+        - name: ssh
+          mountPath: /home/user/.ssh_mnt
+        - name: dshm
+          mountPath: /dev/shm
+        ports:
+        - containerPort: 22
+        securityContext:
+          privileged: true
+      nodeSelector:
+        number: "06"
+      volumes:
+      - name: dshm
+        emptyDir:
+          medium: Memory
+      - name: braking
+        flexVolume:
+          driver: "fstab/cifs"
+          fsType: "cifs"
+          secretRef:
+            name: "cifs-secret"
+          options:
+            networkPath: ""
+            mountOptions: "uid=1000,gid=1000,domain=AD0,nobrl"
+      - name: datasets
+        flexVolume:
+          driver: "fstab/cifs"
+          fsType: "cifs"
+          secretRef:
+            name: "cifs-secret"
+          options:
+            networkPath: ""
+            mountOptions: "uid=1000,gid=1000,domain=AD0,nobrl"
+      - name: ssh
+        flexVolume:
+          driver: "fstab/cifs"
+          fsType: "cifs"
+          secretRef:
+            name: "cifs-secret"
+          options:
+            networkPath: ""
+            mountOptions: "uid=1000,gid=1000,domain=AD0,nobrl"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: braking
+  labels:
+    app: braking
+spec:
+  type: NodePort
+  ports:
+  - name: ssh
+    port: 22
+  selector:
+    app: braking

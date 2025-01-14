@@ -15,10 +15,11 @@ import yaml
 from flask import Flask, jsonify, render_template, request
 from PIL import Image
 
-from annotator import CLIP_LENGTH, DATA_ROOT, PATH_TO_DB, PATH_TO_SESSIONS, PATH_TO_TEMP
-from braking import DATETIME_FMT
-from braking.io import imgs_to_mp4, seq_to_mp4
-from braking.utils import dts_to_frames, get_start_dt
+from src.annotator import (CLIP_LENGTH, DATA_ROOT, PATH_TO_DB,
+                           PATH_TO_SESSIONS, PATH_TO_TEMP)
+from src.braking import DATETIME_FMT
+from src.braking.io import imgs_to_mp4, seq_to_mp4
+from src.braking.utils import dts_to_frames, get_start_dt
 
 app = Flask(__name__)
 

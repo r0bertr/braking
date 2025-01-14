@@ -1,4 +1,0 @@
-path_to_db: ./data/probe_data.db
-detector:
-  method: accel
-  threshold: -0.25

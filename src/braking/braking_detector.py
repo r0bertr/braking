@@ -6,18 +6,21 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from braking import CAT_COLUMNS
-from braking.analysis import compute_metrics, compute_pr_curve
-from braking.config import DetectorConfig
-from braking.io import save_json
-from braking.plot import plot_model
-from braking.utils import shift_df
+from src.braking import CAT_COLUMNS
+from src.braking.analysis import compute_metrics, compute_pr_curve
+from src.braking.config import DetectorConfig
+from src.braking.io import save_json
+from src.braking.plot import plot_model
+from src.braking.utils import shift_df
 
 
 class BrakingDetector:
-    def __init__(self, cfg: DetectorConfig) -> None:
+    def __init__(self, cfg: DetectorConfig, path_to_model: Path = None) -> None:
         self.cfg = cfg
         self.model = None
+        if path_to_model is not None:
+            self.model = catboost.CatBoostClassifier()
+            self.model.load_model(path_to_model)
 
     def forward(self, df: pd.DataFrame) -> np.ndarray:
         if self.cfg.method == "accel":
@@ -77,11 +80,11 @@ class BrakingDetector:
 
         self.model.save_model(path_to_output / "model.bin")
 
-        eval_dict = self.eval(x_val, y_val)
+        eval_dict = self._eval(x_val, y_val)
         plot_model(eval_dict, self.cfg.columns, path_to_output)
         save_json(eval_dict, path_to_output / "eval.json")
 
-    def eval(self, x_val: pd.DataFrame, y_val: np.ndarray) -> dict:
+    def _eval(self, x_val: pd.DataFrame, y_val: np.ndarray) -> dict:
         y_preds_probe = self.forward(x_val)
         y_preds_50 = np.where(y_preds_probe >= 0.5, 1, 0)
         metric_dict = compute_metrics(y_val, y_preds_50)

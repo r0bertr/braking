@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from braking import DATA_ROOT
+from src.braking import DATA_ROOT
 
 PATH_TO_TEMP = Path("/home/user/temp")
 PATH_TO_SESSIONS = DATA_ROOT / "databases/cleaned/annotation_sessions"

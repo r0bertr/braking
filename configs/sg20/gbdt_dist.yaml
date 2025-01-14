@@ -1,0 +1,24 @@
+path_to_exp_dir: ../data/ITS/kyushu_driving_database/experiments/shadow
+path_to_db: /home/user/data/kyushu_driving_database/databases/cleaned/probe_data_annotated_distance_shadow.db
+seq_names:
+  - 20180118_11/20180119_125619_001_Camera1
+  - 20180118_12/20180121_111123_001_Camera1
+  - 20180106_08/20180107_101019_001_Camera1
+  - 20180131_37/20180202_135409_001_Camera1
+  - 20180112_13/20180119_103446_001_Camera1
+  - 20180106_08/20180108_100744_001_Camera1
+  - 20180118_12/20180121_152742_001_Camera1
+  - 20180131_37/20180201_131334_001_Camera1
+  - 20180114_07/20180115_115522_001_Camera1
+  - 20180112_13/20180114_131834_001_Camera1
+  - 20171223_45/20171226_132716_001_Camera1
+  - 20180111_15/20180118_110842_001_Camera1
+  - 20180106_08/20180106_163333_001_Camera1
+  - 20180119_01/20180120_094457_001_Camera1
+  - 20180119_34/20180120_160333_001_Camera1
+  - 20180114_18/20180118_090711_001_Camera1
+  - 20171223_45/20171223_133412_001_Camera1
+  - 20180112_13/20180115_113738_001_Camera1
+  - 20180112_13/20180113_112721_001_Camera1
+  - 20180111_34/20180113_153601_001_Camera1
+columns: ["datetime", "speed", "accel_x", "accel_y", "accel_z", "accel", "latitude", "longitude", "direction", "delta_dist_mean_3secs","dist_mean_3secs","n_dets_3secs","dist_mean_1secs","delta_dist_mean_1secs","n_dets_1secs"]

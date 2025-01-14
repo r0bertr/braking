@@ -1,0 +1,2 @@
+path_to_db: ../data/ITS/kyushu_driving_database/databases/cleaned/probe_data.db
+method: accel

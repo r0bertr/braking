@@ -1,0 +1,36 @@
+services:
+  braking:
+    image: r0bert/braking
+    ports:
+      - "${SSH_PORT}:22"
+    privileged: true
+    shm_size: 2gb
+    volumes:
+      - "braking:/home/user/braking"
+      - "data:/home/user/data"
+      - "ssh:/home/user/.ssh_mnt"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+
+# Comment out the following lines to use your own volumes.
+volumes:
+  braking:
+    driver_opts:
+      type: cifs
+      o: username=${CIFS_USERNAME},password=${CIFS_PASSWORD},domain=AD0,uid=1000,gid=1000,nobrl
+      device: ${CIFS_BRAKING_PATH}
+  data:
+    driver_opts:
+      type: cifs
+      o: username=${CIFS_USERNAME},password=${CIFS_PASSWORD},domain=AD0,uid=1000,gid=1000,nobrl
+      device: ${CIFS_DATA_PATH}
+  ssh:
+    driver_opts:
+      type: cifs
+      o: username=${CIFS_USERNAME},password=${CIFS_PASSWORD},domain=AD0,uid=1000,gid=1000
+      device: ${CIFS_SSH_PATH}

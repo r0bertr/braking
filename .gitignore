@@ -1,4 +1,7 @@
-data
-experiments
-klab*
+# Python
 *.pyc
+__pycache__
+
+.env
+
+docker/k8s.yaml

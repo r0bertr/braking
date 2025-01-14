@@ -1,3 +1,6 @@
 [submodule "lib/dd3d"]
 	path = lib/dd3d
 	url = git@github.com:r0bertr/dd3d.git
+[submodule "lib/bts"]
+	path = lib/bts
+	url = https://github.com/r0bertr/bts.git

@@ -26,3 +26,11 @@ K = np.array([
     [0.0, 614.51158047623, 240.0],
     [0.0, 0.0, 1.0],
 ], dtype=np.float32)
+COLUMN_GROUPS = {
+    "acceleration": ["accel", "accel_x", "accel_y", "accel_z"],
+    "speed": ["speed"],
+    "distance": ["delta_dist_mean_1secs", "delta_dist_mean_3secs", "dist_mean_1secs", "dist_mean_3secs", "n_dets_1secs", "n_dets_3secs"],
+    "location": ["latitude", "longitude"],
+    "direction": ["direction"],
+    "illumination": ["sg_height", "sg_sharpness", "sg_amplitude"],
+}

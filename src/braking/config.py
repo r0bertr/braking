@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from pathlib import Path
 from typing import List, Literal
 
@@ -24,10 +24,18 @@ class Config:
     verbose: bool = True
 
     def to_yaml(self, path: Path):
-        yaml.safe_dump(self.__dict__, path)
-    
-    @staticmethod
-    def from_yaml(path: Path) -> "Config":
+        conf = self.__dict__.copy()
+        for field in fields(self.__class__):
+            if field.type is Path:
+                conf[field.name] = str(conf[field.name])
+        with open(path, "w") as f:
+            yaml.safe_dump(conf, f)
+
+    @classmethod
+    def from_yaml(cls: "Config", path: Path) -> "Config":
         with open(path, "r") as f:
             conf = yaml.safe_load(f)
+        for field in fields(cls):
+            if field.type is Path:
+                conf[field.name] = Path(conf[field.name])
         return Config(**conf)

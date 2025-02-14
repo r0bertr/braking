@@ -56,8 +56,9 @@ JOIN (SELECT DISTINCT csv_identifier, seq_name
     WHERE braking_flag > 0
     GROUP BY csv_identifier, seq_name) AS t2
 ON t1.csv_identifier = t2.csv_identifier AND t1.seq_name = t2.seq_name
-ORDER BY csv_identifier, seq_name
-"""
+ORDER BY csv_identifier, seq_name, datetime;
+""" # ORDER BY datetime is important. 
+    # To reproduce the paper results, remove datetime after ORDER BY here.
     with sqlite3.connect(path_to_db) as conn:
         df = pd.read_sql(sql, conn)
     return df

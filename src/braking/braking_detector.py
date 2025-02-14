@@ -8,14 +8,14 @@ from sklearn.model_selection import train_test_split
 
 from src.braking import CAT_COLUMNS
 from src.braking.analysis import compute_metrics, compute_pr_curve
-from src.braking.config import DetectorConfig
+from src.braking.config import Config
 from src.braking.io import save_json
 from src.braking.plot import plot_model
 from src.braking.utils import shift_df
 
 
 class BrakingDetector:
-    def __init__(self, cfg: DetectorConfig, path_to_model: Path = None) -> None:
+    def __init__(self, cfg: Config, path_to_model: Path = None) -> None:
         self.cfg = cfg
         self.model = None
         if path_to_model is not None:

@@ -7,7 +7,7 @@ from scipy.stats import mannwhitneyu
 from src.braking.io import load_json
 from src.braking.plot import plot_multi_feature_importance, plot_multi_xy
 
-path_to_exp = Path("../data/kyushu_driving_database/experiments/shadow")
+path_to_exp = Path("../data/kyushu_driving_database/experiments/shadow_round_1")
 
 n_pairs = 3
 paths_to_exps = [
@@ -19,7 +19,7 @@ paths_to_exps = [
     path_to_exp / "gbdt_shadow_pred_2sec",
     path_to_exp / "gbdt_dist",
     path_to_exp / "gbdt_dist_pred_1sec",
-    path_to_exp / "gbdt_dist_pred_2sec",
+    path_to_exp / "gbdt_dist_pred_2secs",
     path_to_exp / "gbdt_dist_shadow",
     path_to_exp / "gbdt_dist_shadow_pred_1sec",
     path_to_exp / "gbdt_dist_shadow_pred_2sec",
@@ -91,14 +91,13 @@ print(latex)
 plot_multi_xy(recalls, precisions, path_to_exp / "pr_curve.pdf",
     labels=[exp_name.replace("\n", " ") for exp_name in exp_names],
     grid=True, x_limits=(0, 1), y_limits=(0, 1), figsize=(13, 6))
-y_limits = [(0.5, 0.8), (0, 0.5), (0, 0.1), (0, 0.1), (0, 0.1), (0, 0.1)]
 for i in range(n_pairs):
     exp_labels = [exp_names[i + j * n_pairs] for j in range(len(exp_names) // n_pairs)]
     exp_labels = [exp_label.replace("\n", " ") for exp_label in exp_labels]
     rec = [recalls[i + j * n_pairs] for j in range(len(recalls) // n_pairs)]
     pre = [precisions[i + j * n_pairs] for j in range(len(precisions) // n_pairs)]
     plot_multi_xy(rec, pre, path_to_exp / f"pr_curve_{i}secs.pdf", labels=exp_labels, grid=True,
-        x_limits=(0.8, 1), y_limits=(0.6, 1))
+        x_limits=(0, 1), y_limits=(0, 1))
 
 # Feature importance
 merge_importances = {

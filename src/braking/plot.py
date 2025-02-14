@@ -153,3 +153,31 @@ def plot_multi_xy(x_datas, y_datas, path_to_output: Path, title: str = "",
         fig.tight_layout()
     fig.savefig(path_to_output)
     plt.close(fig)
+
+def plot_boxplot(data, path_to_output: Path, labels: list, title: str = "",
+    y_label: str = "Values", tight: bool = True, whis = None,
+    only_inliers: bool = False) -> None:
+
+    if only_inliers:
+        fig, ax2 = plt.subplots(1, 1, figsize=(10, 6))
+    else:
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 6))
+
+    if not only_inliers:
+        # Box plot with outliers
+        ax1.boxplot(data, labels=labels, whis=whis)
+        ax1.set_title(f"{title} - with outliers")
+        ax1.set_ylabel(y_label)
+        ax1.set_xticklabels(labels, rotation=45, ha="right")
+
+    # Box plot without outliers
+    ax2.boxplot(data, labels=labels, showfliers=False, whis=whis)
+    # ax2.set_title(f"{title} - without outliers")
+    # ax2.set_ylabel(y_label)
+    # ax2.set_xticklabels(labels, rotation=45, ha="right")
+
+    # Save the plot
+    if tight:
+        plt.tight_layout()
+    plt.savefig(path_to_output)
+    plt.close(fig)

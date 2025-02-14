@@ -1,7 +1,6 @@
 #!/bin/bash
 
-PATH_TO_CFGS=./configs/shadow
-PATH_TO_EXPS=../data/kyushu_driving_database/experiments/shadow_round_2
+PATH_TO_CFGS=./configs/sg20
 
 BLACKLIST=(
 )
@@ -21,8 +20,7 @@ fi
 
 echo Running $exp_name
 
-python -u src/exp_gbdt.py \
-    --path-to-cfg=$cfg \
-    --path-to-output=$PATH_TO_EXPS/$exp_name
+python -u src/tools/train_gbdt.py \
+    --path-to-cfg=$cfg
 
 done

@@ -1,4 +1,4 @@
 path_to_exp_dir: ../data/kyushu_driving_database/experiments/distance
 path_to_db: ../data/kyushu_driving_database/databases/cleaned/probe_data_annotated_distance.db
 columns: ["datetime", "speed", "accel_x", "accel_y", "accel_z", "accel", "latitude", "longitude", "direction"]
-offset: 2
+offset: 1

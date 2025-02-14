@@ -1,4 +1,4 @@
-path_to_exp_dir: ../data/ITS/kyushu_driving_database/experiments/shadow
+path_to_exp_dir: ../data/kyushu_driving_database/experiments/shadow_round_1
 path_to_db: ../data/kyushu_driving_database/databases/cleaned/probe_data_annotated_distance_shadow.db
 seq_names:
   - 20180118_11/20180119_125619_001_Camera1
